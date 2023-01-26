@@ -1,7 +1,7 @@
 import scrapy
 
 class LianjiaspiderItem(scrapy.Item):
-    id = scrapy.Field()
+    _id = scrapy.Field()
     totalPrice = scrapy.Field()
     unitPrice = scrapy.Field()
     region = scrapy.Field()

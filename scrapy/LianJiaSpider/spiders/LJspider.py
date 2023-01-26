@@ -27,8 +27,8 @@ class LjspiderSpider(scrapy.Spider):
             self.maxPage = -1
 
     def infoparse(self, response):
-        id = response.url[34:-5]
-        print(f'\tParsing id: {id}')
+        _id = response.url[34:-5]
+        print(f'\tParsing id: {_id}')
 
         price_box = response.xpath('//div[@class="overview"]/div[@class="content"]//div[@class="price "]')
         totalPrice = price_box.xpath('./span[@class="total"]/text()').get()
@@ -63,9 +63,9 @@ class LjspiderSpider(scrapy.Spider):
 
         totalPrice = float(totalPrice)
         unitPrice = float(unitPrice)
-        area = float(re.search(r'(\.|\d)+',area).group(0))
+        area = float(re.search(r'(\.|\d)+',area).groups()[0])
         item = LianjiaspiderItem(
-            id = id,
+            _id = _id,
             totalPrice = totalPrice,
             unitPrice = unitPrice,
             region = region,
