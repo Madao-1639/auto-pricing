@@ -84,7 +84,7 @@ class xgbrHpyeropt:
         """
         best_params = fmin(self.hyperopt_objective,\
             self.hyperopt_space,algo=algo,max_evals=max_evals)
-        print('-' * 30, 'best_params:', best_params, '-' * 30, sep='\n')
+        print('-' * 30, 'best_params(unscaled):', best_params, '-' * 30, sep='\n')
         model = XGBRegressor(**best_params, n_jobs=self.n_jobs)
         model.fit(self.x, self.y)
         return model
