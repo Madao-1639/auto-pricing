@@ -12,11 +12,11 @@ plt.rcParams['font.sans-serif'] = 'SimHei'
 plt.rcParams['axes.unicode_minus'] = False
 np.random.RandomState(seed=502)
 
-data = pd.read_csv('proccessed_data.csv')                           #导入数据
-X = data.drop(columns=['_id', 'totalPrice'])                        #只保留特征
-y = data['totalPrice']                                              #目标变量
+data = pd.read_csv('proccessed_data.csv')                                   #导入数据
+X = data.drop(columns=['_id', 'totalPrice'])                                #只保留特征
+y = data['totalPrice']                                                      #目标变量
 X_train,X_test,y_train,y_test=\
-    train_test_split(X,y,test_size=0.2,random_state=923)            #训练集测试集分割
+    train_test_split(X,y,test_size=0.2,random_state=923)                    #训练集测试集分割
 
 
 class xgbrHpyeropt:
@@ -24,7 +24,7 @@ class xgbrHpyeropt:
     使用Hpyeropt自动挑选超参数并生成最终XGBR模型
     可以在 hyperopt_space 中修改超参数的搜索范围
     """
-    hyperopt_space = {                                              #定义（放缩前的）参数搜索空间
+    hyperopt_space = {                                                      #定义（放缩前的）参数搜索空间
         'max_depth': hp.randint('max_depth', 20),
         #'min_child_weight':hp.randint('min_child_weight',5),
         'subsample': hp.uniform('subsample', 0.5, 1),
@@ -52,21 +52,25 @@ class xgbrHpyeropt:
         定义最小化的目标函数，
         使用K折交叉验证，计算K次训练的均方误差，最后平均求得评价分数
         """
+        __params = {
+            'max_depth': 1 + params['max_depth'],                       #最大深度 [1,20]
+            #'min_child_weight':1+params['min_child_weight'],           #叶子节点中最小的样本权重和 [1,5]
+            'subsample': params['subsample'],                           #训练实例的子样本比率 [0.5-1]
+            'n_estimators':
+            10 + 35 * params['n_estimators'],                           #使用多少棵树来拟合，也可以理解为多少次迭代 [10,675]
+            'learning_rate':
+            0.1 + 0.05 * params['learning_rate'],                       #学习率 [0.1-1]
+            'reg_lambda': 0.05 * params['reg_lambda'],                  #l2正则项系数 [0,1]
+            #'reg_alpha':0.05*params['reg_alpha'],                      #l1正则项系数 [0,1]
+        }
         model = XGBRegressor(
-            max_depth=1 + params['max_depth'],                      #最大深度 [1,20]
-            #min_child_weight=1+params['min_child_weight'],         #叶子节点中最小的样本权重和 [1,5]
-            subsample=params['subsample'],                          #训练实例的子样本比率 [0.5-1]
-            n_estimators=10 +
-            35 * params['n_estimators'],                            #使用多少棵树来拟合，也可以理解为多少次迭代 [10,675]
-            learning_rate=0.1 + 0.05 * params['learning_rate'],     #学习率 [0.1-1]
-            reg_lambda=0.05 * params['reg_lambda'],                 #l2正则项系数 [0,1]
-            #reg_alpha=0.05*params['reg_alpha'],                    #l1正则项系数 [0,1]
+            **__params,
             n_jobs=self.n_jobs)
         cv_score=cross_val_score(model,self.x.values,self.y.values,\
             cv=self.cv,scoring=self.scoring,n_jobs=-1)
         score = np.mean(cv_score)
         print('*' * 30)
-        print(params)
+        print(__params)
         print(f'score: {score}')
         print('*' * 30)
         return score
@@ -86,12 +90,12 @@ class xgbrHpyeropt:
         return model
 
 
-#untuned_model=XGBRegressor(n_job=-1).fit(X_train,y_train)          #调参前的模型
+#untuned_model=XGBRegressor(n_job=-1).fit(X_train,y_train)              #调参前的模型
 hyper = xgbrHpyeropt(X_train, y_train)
-model = hyper.train(max_evals=200)                                  #调参后的模型(200次选择)
+model = hyper.train(max_evals=200)                                      #调参后的模型(200次选择)
 
 y_pred = model.predict(X_test)
 r2 = r2_score(y_test, y_pred)
 MSE = mean_absolute_error(y_test, y_pred)
 print(f'r2: {r2}\nMSE: {MSE}')
-model.save_model('./model/XGBR.model')                              #保存模型
+model.save_model('./model/XGBR.model')                                  #保存模型
