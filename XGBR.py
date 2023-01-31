@@ -38,7 +38,7 @@ class xgbrHpyeropt:
         """
         X_train(y_train): 作为交叉验证的 训练集+验证集 以及 最终模型训练的 训练集 自变量(因变量)
         cv: 选择超参数时的交叉验证次数，默认使用5折交叉验证
-        scoring: 选择超参数时的模型评价方法，默认使用均方误差
+        scoring: 选择超参数时的模型评价方法，默认使用平均绝对误差
         n_jobs: 并行线程数，默认调用全部CPU
         """
         self.x = X_train
@@ -96,6 +96,6 @@ model = hyper.train(max_evals=200)                                      #调参�
 
 y_pred = model.predict(X_test)
 r2 = r2_score(y_test, y_pred)
-MSE = mean_absolute_error(y_test, y_pred)
-print(f'r2: {r2}\nMSE: {MSE}')
+MAE = mean_absolute_error(y_test, y_pred)
+print(f'r2: {r2}\nMAE: {MAE}')
 model.save_model('./model/XGBR.model')                                  #保存模型
